@@ -1,0 +1,108 @@
+* {
+    background-color: #101010;
+    color: #00FF88;
+    border-color: #00FF88;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* The sidebar menu */
+.sidebar {
+    height: 100%; /* 100% Full-height */
+    width: 0; /* 0 width - change this with JavaScript */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Stay on top */
+    top: 0;
+    left: 0;
+    overflow-x: hidden; /* Disable horizontal scroll */
+    overflow-y: hidden; /* Disable vertical scroll */
+    overflow-wrap: break-word;
+    font-size: large;
+}
+
+.sidebarText {
+    padding: 5% 5% 5% 5%;
+}
+
+.qrCode {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 256;
+}
+
+img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* The sidebar menu */
+.controlPanel {
+    height: 100%; /* 100% Full-height */
+    width: 512px; /* 0 width - change this with JavaScript */
+    max-width: 100%;
+    position: fixed; /* Stay in place */
+    left: 50%;
+    /* bring your own prefixes */
+    transform: translate(-50%, 0);
+    overflow-x: hidden; /* Disable horizontal scroll */
+    overflow-wrap: break-word;
+    font-size: large;
+    display: inline-block;
+}
+
+button {
+    padding: 5px;
+    border: 1px solid #202020;
+    background-color: #202020;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: large;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0px;
+}
+
+button:hover {
+    border: 1px solid #00FF88;
+    background-color: #303030;
+}
+
+button:active {
+    border: 1px solid #00FF88;
+    background-color: #303030;
+}
+
+button:focus {
+    border: 1px solid #202020;
+    background-color: #202020;
+}
+
+button:visited {
+    border: 1px solid #202020;
+    background-color: #202020;
+}
+
+input[type=checkbox] {
+	-webkit-appearance: none;
+	background-color: #202020;
+	border: 1px solid #00FF88;
+    padding: 8px;
+    position: relative;
+    top:6px;
+}
+
+input[type=checkbox]:checked {
+	background-color: #00FF88;
+}
+
+input[type=text] {
+	background-color: #202020;
+	border: 1px solid #202020;
+    font-size: large;
+    width: 100%
+}
+
+input[type=text].focus {
+	background-color: #303030;
+	border: 1px solid #00FF88;
+}
