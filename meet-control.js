@@ -11,6 +11,34 @@ function getConfigInfo() {
     }, base64ToBytes(gMinConfig.controlKey), sendMsg)
 }
 
+function setConfigInfo() {
+    encryptAndHandleMsg({
+        type: "setConfig",
+        config: {
+            roomName: document.getElementById("roomName").value,
+            roomPass: document.getElementById("roomPass").value,
+            autoHdmi: document.getElementById("autoHdmi").checked,
+            showSidebar: document.getElementById("showSidebar").checked,
+            showConfig: document.getElementById("showConfig").checked,
+            localMute: document.getElementById("localMute").checked
+        }
+    }, base64ToBytes(gMinConfig.controlKey), sendMsg);
+
+    // Update our min config too
+    gMinConfig.roomName = document.getElementById("roomName").value;
+    gMinConfig.roomPass = document.getElementById("roomPass").value;
+    updateHashAndReload();
+}
+
+function updateHashAndReload() {
+    const newHash = configToHash(gMinConfig);
+    if (newHash != location.hash.substring(1)) {
+        console.log("There was a change, reloading...")
+        location.hash = '#' + newHash;
+        setTimeout(() => {location.reload()}, 1000);
+    }
+}
+
 function controlMsgHandler(msgObj) {
     switch (msgObj.type) {
         case "config":
@@ -32,12 +60,7 @@ function controlMsgHandler(msgObj) {
 
             // Reload if anything caused a change to fundamental parameters (room name or key)
             // Verify this by checking the hash
-            const newHash = configToHash(gMinConfig);
-            if (newHash != location.hash.substring(1)) {
-                console.log("There was a change, reloading...")
-                location.hash = '#' + newHash;
-                location.reload();
-            }
+            updateHashAndReload();
 
             break;
     }
@@ -103,6 +126,7 @@ try {
     });
 
     window.getConfigInfo = getConfigInfo;
+    window.setConfigInfo = setConfigInfo;
     window.hangupAndDispose = () => {
         hangupAndDispose(gJitsiApi);
     };

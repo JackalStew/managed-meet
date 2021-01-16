@@ -21,8 +21,8 @@ export function generatePassword(numWords) {
     return generateWords(numWords).join('-');
 }
 
-export function generateKey() {
-    let keyArr = new Uint8Array(16);
+export function generateKey(keyLen) {
+    let keyArr = new Uint8Array(keyLen);
     window.crypto.getRandomValues(keyArr);
     return keyArr;
 }

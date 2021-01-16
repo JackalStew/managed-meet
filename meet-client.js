@@ -9,15 +9,21 @@ function inElectronRenderer() {
 
 /* Set the width of the sidebar to 250px and the left margin of the page content to 250px */
 function openSidebar() {
-    document.getElementById("mySidebar").style.width = "25%";
+    document.getElementById("sidebar").style.width = "25%";
     var jitsiIFrame = gJitsiApi.getIFrame();
     jitsiIFrame.style.marginLeft = "25%";
     jitsiIFrame.style.width = "75%";
+
+    if (gConfigOptions.showConfig) {
+        document.getElementById("controlInfo").style.display = "block";
+    } else {
+        document.getElementById("controlInfo").style.display = "none";
+    }
 }
   
 /* Set the width of the sidebar to 0 and the left margin of the page content to 0 */
 function closeSidebar() {
-    document.getElementById("mySidebar").style.width = "0";
+    document.getElementById("sidebar").style.width = "0";
     var jitsiIFrame = gJitsiApi.getIFrame();
     jitsiIFrame.style.marginLeft = "0";
     jitsiIFrame.style.width = "100%";
@@ -27,23 +33,33 @@ function onPartitipantsChange() {
     if (gJitsiApi.getNumberOfParticipants() > 1) {
         closeSidebar();
     } else {
-        openSidebar();
+        if (gConfigOptions.showSidebar) {
+            openSidebar();
+        } else {
+            closeSidebar();
+        }
     }
 }
 
+function updateMuteStatus() {
+    gJitsiApi.isVideoMuted().then(muted => {
+        if (muted != gConfigOptions.localMute) {
+            gJitsiApi.executeCommand('toggleVideo');
+        }
+    });
+    gJitsiApi.isAudioMuted().then(muted => {
+        if (muted != gConfigOptions.localMute) {
+            gJitsiApi.executeCommand('toggleAudio');
+        }
+    });
+}
+
 function generateConfig() {
-    /*var thisConfig = {
-        displayName: "TestDN",
-        roomName: "DuncyTestingRoom",
-        roomPass: "boop",
-        showJoinInfo: true,
-        showConfigInfo: true
-    }*/
     var thisConfig = {
         displayName: "TestDN",
         roomName: generatePassword(4),
         roomPass: generatePassword(4),
-        controlKey: bytesToBase64(new Uint8Array(16)),
+        controlKey: bytesToBase64(generateKey(16)),
         autoHdmi: true,
         showSidebar: true,
         showConfig: true,
@@ -68,25 +84,7 @@ function getStoredConfig() {
             }
         } catch {};
     }
-
-    /*
-    if (location.hash.length > 1) {
-        // Try to read from location has variables
-        try {
-            tempConfig = hashToConfig(location.hash.substring(1));
-            for (var key in thisConfig) {
-                if (key in tempConfig) {
-                    thisConfig[key] = tempConfig[key]
-                }
-            }
-        } catch {};
-    }
-    */
-
     gConfigOptions = thisConfig;
-
-    // TODO: Get key bytes from storage
-    //keyBytes = generateKey();
 }
 
 function saveConfig() {
@@ -101,6 +99,8 @@ function applyNewConfig(configIn) {
     let newPassFlag = false;
     let reloadFlag = false;
 
+    const oldKey = base64ToBytes(gConfigOptions.controlKey);
+
     for (var key in configIn) {
         if (key in gConfigOptions && gConfigOptions[key] != configIn[key]) {
             switch(key) {
@@ -113,7 +113,6 @@ function applyNewConfig(configIn) {
                 default:
                     break
             }
-
             gConfigOptions[key] = configIn[key]
         }
     }
@@ -128,20 +127,15 @@ function applyNewConfig(configIn) {
     // Save new config locally
     saveConfig();
 
-    // Let all controllers know the new deets
-    encryptAndHandleMsg({
-        type: "config",
-        config: gConfigOptions
-    }, base64ToBytes(gConfigOptions.controlKey), sendMsg);
-
     // May need a reload
     if (reloadFlag) {
         console.log("Reloading due to config update...");
         hangupAndDispose(gJitsiApi);
         location.reload();
     } else {
-        // Otherwise run this function to update display
+        // Otherwise run these functions to update display
         onPartitipantsChange();
+        updateMuteStatus();
     }
 }
 
@@ -157,6 +151,13 @@ function msgHandler(msgObj) {
                 type: "config",
                 config: gConfigOptions
             }, base64ToBytes(gConfigOptions.controlKey), sendMsg);
+            break;
+
+        case "setConfig":
+            console.log("New config information received")
+            console.log(msgObj.config);
+            applyNewConfig(msgObj.config)
+            console.log("New config information set")
             break;
     }
 }
@@ -258,6 +259,7 @@ try {
     });
 
     window.configOptions = gConfigOptions;
+    window.gJitsiApi = gJitsiApi;
     window.saveConfig = saveConfig;
     window.clearConfig = clearConfig;
     window.configToHash = () => {

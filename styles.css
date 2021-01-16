@@ -25,6 +25,7 @@
 
 .controlInfo {
     padding: 5% 5% 5% 5%;
+    display: none;
 }
 
 .qrCode {
@@ -87,7 +88,7 @@ input[type=checkbox] {
 	border: 1px solid #00FF88;
     padding: 20px;
     position: relative;
-    top:12px;
+    top:14px;
 }
 
 input[type=checkbox]:checked {
