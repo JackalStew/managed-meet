@@ -1,6 +1,6 @@
 import { generateKey, generatePassword } from "./random.js"
 import { bytesToBase64, base64ToBytes } from "./base64.js"
-import { hangupAndDispose, encryptAndHandleMsg, decryptAndHandleMsg } from "./meet-common.js"
+import { hangupAndDispose, encryptAndHandleMsg, decryptAndHandleMsg, configToHash } from "./meet-common.js"
 
 function inElectronRenderer() {
     if ((window && window.process && window.process.type) == "renderer") return true;
@@ -168,21 +168,31 @@ try {
     saveConfig();
 
     var domain = "meet.jit.si";
-    var joinURL = "https://" + domain + '/' + gConfigOptions["roomName"];
+    var joinUrl = "https://" + domain + '/' + gConfigOptions["roomName"];
+    var controlUrl = "https://jackalstew.github.io/managed-meet/control.html#" + configToHash(gConfigOptions)
 
-    document.getElementById("roomURL").href = joinURL;
-    document.getElementById("roomURL").innerHTML = joinURL;
+    document.getElementById("roomURL").href = joinUrl;
+    document.getElementById("roomURL").innerHTML = joinUrl;
 
     document.getElementById("roomPass").innerHTML = gConfigOptions["roomPass"];
 
     const qrSize = 256;
 
     var joinQR = new QRCode(document.getElementById("joinQR"), {
-        text: joinURL,
+        text: joinUrl,
         width: qrSize,
         height: qrSize,
         colorDark: window.getComputedStyle(document.getElementById("joinInfo")).color,
         colorLight: window.getComputedStyle(document.getElementById("joinInfo")).backgroundColor,
+        correctLevel: QRCode.CorrectLevel.L
+    });
+
+    var controlQR = new QRCode(document.getElementById("controlQR"), {
+        text: controlUrl,
+        width: qrSize,
+        height: qrSize,
+        colorDark: window.getComputedStyle(document.getElementById("controlInfo")).color,
+        colorLight: window.getComputedStyle(document.getElementById("controlInfo")).backgroundColor,
         correctLevel: QRCode.CorrectLevel.L
     }); 
 
@@ -250,6 +260,9 @@ try {
     window.configOptions = gConfigOptions;
     window.saveConfig = saveConfig;
     window.clearConfig = clearConfig;
+    window.configToHash = () => {
+        return configToHash(gConfigOptions)
+    }
 }
 
 catch(err) {

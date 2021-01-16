@@ -6,11 +6,21 @@ export function hangupAndDispose(jitsiAPI) {
 }
 
 export function hashToConfig(hashString) {
-    return JSON.parse(atob(hashString));
+    const confArr = JSON.parse(atob(hashString));
+    return {
+        roomName: confArr[0],
+        roomPass: confArr[1],
+        controlKey: confArr[2]
+    }
 }
 
-export function configToHash(tempConfig) {
-    return btoa(JSON.stringify(tempConfig));
+export function configToHash(configIn) {
+    const minConfig = [
+        configIn.roomName,
+        configIn.roomPass,
+        configIn.controlKey
+    ]
+    return btoa(JSON.stringify(minConfig));
 }
 
 export async function encryptAndHandleMsg(msgObj, keyBytes, handleCallback) {

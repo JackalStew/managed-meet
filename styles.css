@@ -23,6 +23,10 @@
     padding: 5% 5% 5% 5%;
 }
 
+.controlInfo {
+    padding: 5% 5% 5% 5%;
+}
+
 .qrCode {
     margin-left: auto;
     margin-right: auto;
@@ -34,7 +38,6 @@ img {
     max-height: 100%;
 }
 
-/* The sidebar menu */
 .controlPanel {
     height: 100%; /* 100% Full-height */
     width: 512px; /* 0 width - change this with JavaScript */

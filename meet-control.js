@@ -1,52 +1,5 @@
-import { bytesToBase64, base64ToBytes } from "./base64.js"
-import { hangupAndDispose, encryptAndHandleMsg, decryptAndHandleMsg } from "./meet-common.js"
-
-function generateConfig() {
-    var thisConfig = {
-        displayName: "control",
-        roomName: "DuncyTestingRoom",
-        roomPass: "boop",
-        showJoinInfo: true,
-        showConfigInfo: true
-    }//*/
-    /*
-    var thisConfig = {
-        displayName: "TestDN",
-        roomName: generatePassword(4),
-        roomPass: generatePassword(4),
-        showJoinInfo: true,
-        showConfigInfo: true
-    }*/
-    return thisConfig;
-}
-
-function getConfig() {
-    // start with a blank slate
-    var thisConfig = generateConfig();
-    var tempConfig = {};
-
-    if (location.hash.length > 1) {
-        // Try to read from location has variables
-        try {
-            tempConfig = hashToConfig(location.hash.substring(1));
-            for (var key in thisConfig) {
-                if (key in tempConfig) {
-                    thisConfig[key] = tempConfig[key]
-                }
-            }
-        } catch {};
-    }
-
-    return thisConfig;
-}
-
-function hashToConfig(hashString) {
-    return JSON.parse(atob(hashString));
-}
-
-function configToHash(tempConfig) {
-    return btoa(JSON.stringify(tempConfig));
-}
+import { base64ToBytes } from "./base64.js"
+import { hangupAndDispose, encryptAndHandleMsg, decryptAndHandleMsg, hashToConfig, configToHash } from "./meet-common.js"
 
 function sendMsg(msgOut) {
     gJitsiApi.executeCommand('sendEndpointTextMessage', '', msgOut);
@@ -55,7 +8,7 @@ function sendMsg(msgOut) {
 function getConfigInfo() {
     encryptAndHandleMsg({
         type: "getConfig"
-    }, keyBytes, sendMsg)
+    }, base64ToBytes(gMinConfig.controlKey), sendMsg)
 }
 
 function controlMsgHandler(msgObj) {
@@ -69,26 +22,41 @@ function controlMsgHandler(msgObj) {
             for (const id of ["autoHdmi", "showSidebar", "showConfig", "localMute"]) {
                 document.getElementById(id).checked = msgObj.config[id];
             }
+
+            // Now update our minconfig object
+            for (var key in gMinConfig) {
+                gMinConfig[key] = msgObj.config[key]
+            }
+
             console.log("Config information set")
+
+            // Reload if anything caused a change to fundamental parameters (room name or key)
+            // Verify this by checking the hash
+            const newHash = configToHash(gMinConfig);
+            if (newHash != location.hash.substring(1)) {
+                console.log("There was a change, reloading...")
+                location.hash = '#' + newHash;
+                location.reload();
+            }
 
             break;
     }
 }
 
 try {
-    var configJSON = getConfig();
-
-    var keyBytes = new Uint8Array(16);
+    var gMinConfig = hashToConfig(location.hash.substring(1));
+    document.getElementById("roomName").value = gMinConfig.roomName;
+    document.getElementById("roomPass").value = gMinConfig.roomPass;
 
     var domain = "meet.jit.si";
 
     var options = {
-        roomName: configJSON.roomName,
+        roomName: gMinConfig.roomName,
         width: 0,
         height: 0,
         parentNode: undefined,
         userInfo: {
-            displayName: configJSON.displayName
+            displayName: "CONTROL"
         },
         configOverwrite: {
             prejoinPageEnabled: false,
@@ -103,12 +71,12 @@ try {
 
     // when local user is trying to enter in a locked room
     gJitsiApi.addEventListener('passwordRequired', () => {
-        gJitsiApi.executeCommand('password', configJSON.roomPass);
+        gJitsiApi.executeCommand('password', gMinConfig.roomPass);
     });
 
     // when local user has joined the video conference 
     gJitsiApi.addEventListener('videoConferenceJoined', (response) => {
-        gJitsiApi.executeCommand('password', configJSON.roomPass);
+        gJitsiApi.executeCommand('password', gMinConfig.roomPass);
         // Bit of a hack. Wait a bit after joining until config request
         setTimeout(() => {getConfigInfo()}, 1000);
     });
@@ -116,7 +84,7 @@ try {
     //this will setup the password for 1st user
     gJitsiApi.on('participantRoleChanged', (event) => {
         if (event.role === 'moderator') {
-            gJitsiApi.executeCommand('password', configJSON.roomPass);
+            gJitsiApi.executeCommand('password', gMinConfig.roomPass);
         }
     });
 
@@ -129,7 +97,9 @@ try {
     });
 
     gJitsiApi.on('endpointTextMessageReceived', (event) => {
-        decryptAndHandleMsg(event.data.eventData.text, keyBytes, controlMsgHandler);
+        decryptAndHandleMsg(event.data.eventData.text,
+            base64ToBytes(gMinConfig.controlKey),
+            controlMsgHandler);
     });
 
     window.getConfigInfo = getConfigInfo;
