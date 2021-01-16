@@ -44,7 +44,7 @@ img {
     position: fixed; /* Stay in place */
     overflow-x: hidden; /* Disable horizontal scroll */
     overflow-wrap: break-word;
-    font-size: large;
+    font-size: xx-large;
     display: inline-block;
 }
 
@@ -55,10 +55,10 @@ button {
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    font-size: large;
     width: 100%;
     max-width: 100%;
     min-width: 0px;
+    font-size: xx-large;
 }
 
 button:hover {
@@ -85,9 +85,9 @@ input[type=checkbox] {
 	-webkit-appearance: none;
 	background-color: #202020;
 	border: 1px solid #00FF88;
-    padding: 8px;
+    padding: 20px;
     position: relative;
-    top:6px;
+    top:12px;
 }
 
 input[type=checkbox]:checked {
@@ -97,8 +97,8 @@ input[type=checkbox]:checked {
 input[type=text] {
 	background-color: #202020;
 	border: 1px solid #202020;
-    font-size: large;
-    width: 100%
+    width: 100%;
+    font-size: xx-large;
 }
 
 input[type=text].focus {
