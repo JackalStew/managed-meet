@@ -172,10 +172,12 @@ try {
     var joinUrl = "https://" + domain + '/' + gConfigOptions["roomName"];
     var controlUrl = "https://jackalstew.github.io/managed-meet/control.html#" + configToHash(gConfigOptions)
 
-    document.getElementById("roomURL").href = joinUrl;
-    document.getElementById("roomURL").innerHTML = joinUrl;
+    document.getElementById("roomUrl").href = joinUrl;
+    document.getElementById("roomUrl").innerHTML = joinUrl;
 
     document.getElementById("roomPass").innerHTML = gConfigOptions["roomPass"];
+
+    document.getElementById("joinUrl").href = joinUrl;
 
     const qrSize = 256;
 
