@@ -177,7 +177,7 @@ try {
 
     document.getElementById("roomPass").innerHTML = gConfigOptions["roomPass"];
 
-    document.getElementById("joinUrl").href = joinUrl;
+    document.getElementById("controlUrl").href = controlUrl;
 
     const qrSize = 256;
 
