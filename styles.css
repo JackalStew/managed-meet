@@ -40,12 +40,8 @@ img {
 
 .controlPanel {
     height: 100%; /* 100% Full-height */
-    width: 512px; /* 0 width - change this with JavaScript */
-    max-width: 100%;
+    width: 100%;
     position: fixed; /* Stay in place */
-    left: 50%;
-    /* bring your own prefixes */
-    transform: translate(-50%, 0);
     overflow-x: hidden; /* Disable horizontal scroll */
     overflow-wrap: break-word;
     font-size: large;
