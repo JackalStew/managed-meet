@@ -9,7 +9,7 @@ function inElectronRenderer() {
 
 /* If we hit an error, try to hangup the reload after a bit */
 function defaultError(err) {
-    console.log("Caught error", err);
+    console.error(err);
     hangupAndDispose(gJitsiApi);
     setTimeout(() => {location.reload()}, 5000);
 }
@@ -48,8 +48,70 @@ function updateDisplay(inCall) {
     }
 }
 
+function getHdmi() {
+    if (!gTmpState.cecLock) {
+        gTmpState.cecLock = true;
+        const cecLockTimeout = setTimeout(() => {gTmpState.cecLock = false;}, 60000);
+
+        const cecCtl = new CecController();
+        
+        async function readyHandler(controller)
+        {
+            const powerStatus = controller.dev0.powerStatus;     
+
+            if (powerStatus != "on") {
+                gTmpState.turnOffTV = (powerStatus == "off" || powerStatus == "standby")
+                await controller.dev0.turnOn();
+            }  
+            await controller.setActive();
+            
+            clearTimeout(cecLockTimeout);
+            gTmpState.cecLock = false;
+        }    
+        
+        cecCtl.on('ready', readyHandler);
+        cecCtl.on('error', console.error);
+    }
+}
+
+function ungetHdmi() {    
+    if (!gTmpState.cecLock) {
+        gTmpState.cecLock = true;
+        const cecLockTimeout = setTimeout(() => {gTmpState.cecLock = false;}, 60000);
+
+        const cecCtl = new CecController();
+        
+        async function readyHandler(controller)
+        {
+            await controller.setInactive();
+
+            if (gTmpState.turnOffTV) {
+                gTmpState.turnOffTV = false;
+                await controller.dev0.turnOff();
+            }
+            
+            clearTimeout(cecLockTimeout);
+            gTmpState.cecLock = false;
+        }    
+        
+        cecCtl.on('ready', readyHandler);
+        cecCtl.on('error', console.error);
+    }
+}
+
 function onPartitipantsChange() {
-    updateDisplay(gJitsiApi.getNumberOfParticipants() > 1);
+    const inCall = gJitsiApi.getNumberOfParticipants() > 1;
+    updateDisplay(inCall);
+
+    if (inElectronRenderer() && gConfigOptions.autoHdmi) {
+        try {
+            if (inCall) getHdmi();
+            else ungetHdmi();
+        } catch(err) {
+            console.log("Error with HDMI");
+            console.error(err);
+        }
+    }
 }
 
 function updateMuteStatus() {
@@ -175,6 +237,13 @@ function msgHandler(msgObj) {
 
 try {
     var gConfigOptions = null;
+    var gTmpState = {
+        turnOffTV: false,
+        cecLock: false
+    }
+
+    if (inElectronRenderer()) var CecController = require('cec-controller');
+    else var CecController = null;
 
     getStoredConfig();
     saveConfig();
