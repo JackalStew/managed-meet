@@ -7,6 +7,13 @@ function inElectronRenderer() {
     else return false;
 }
 
+/* If we hit an error, try to hangup the reload after a bit */
+function defaultError(err) {
+    console.log("Caught error", err);
+    hangupAndDispose(gJitsiApi);
+    setTimeout(() => {location.reload()}, 5000);
+}
+
 /* Set the width of the sidebar to 250px and the left margin of the page content to 250px */
 function openSidebar() {
     document.getElementById("sidebar").style.width = "25%";
@@ -171,7 +178,7 @@ try {
     var domain = "meet.jit.si";
     var joinUrl = "https://" + domain + '/' + gConfigOptions["roomName"];
     var controlUrl = "https://jackalstew.github.io/managed-meet/control.html#" + configToHash(gConfigOptions)
-    
+
     document.getElementById("roomUrl").href = joinUrl;
     document.getElementById("roomUrl").innerHTML = joinUrl;
 
@@ -223,30 +230,51 @@ try {
 
     // when local user is trying to enter in a locked room
     gJitsiApi.addEventListener('passwordRequired', () => {
-        gJitsiApi.executeCommand('password', gConfigOptions.roomPass);
+        try {
+            gJitsiApi.executeCommand('password', gConfigOptions.roomPass);
+        } catch(err) {
+            defaultError(err);
+        };
     });
 
     // when local user has joined the video conference 
     gJitsiApi.addEventListener('videoConferenceJoined', (response) => {
-        gJitsiApi.executeCommand('password', gConfigOptions.roomPass);
+        try {
+            gJitsiApi.executeCommand('password', gConfigOptions.roomPass);
+        } catch(err) {
+            defaultError(err);
+        };
     });
 
     //this will setup the password for 1st user
     gJitsiApi.on('participantRoleChanged', (event) => {
-        if (event.role === 'moderator') {
-            gJitsiApi.executeCommand('password', gConfigOptions.roomPass);
-        }
+        try {
+            if (event.role === 'moderator') {
+                gJitsiApi.executeCommand('password', gConfigOptions.roomPass);
+            }
+        } catch(err) {
+            defaultError(err);
+        };
     });
 
     //These two for when people join or leave. Do stuff if more than 1 person in room.
     gJitsiApi.on('participantJoined', (event) => {
-        onPartitipantsChange();
-    });
-    gJitsiApi.on('participantLeft', (event) => {
-        onPartitipantsChange();
+        try {
+            onPartitipantsChange();
+        } catch(err) {
+            defaultError(err);
+        };
     });
 
-    //On error log, reload.
+    gJitsiApi.on('participantLeft', (event) => {
+        try {
+            onPartitipantsChange();
+        } catch(err) {
+            defaultError(err);
+        };
+    });
+
+    //On error log, reload. This is resilient/simple enough to not require try/catch
     gJitsiApi.on('log', (event) => {
         if (event.logLevel === 'error') {
             hangupAndDispose(gJitsiApi);
@@ -255,11 +283,16 @@ try {
     });
 
     gJitsiApi.on('endpointTextMessageReceived', (event) => {
-        decryptAndHandleMsg(event.data.eventData.text,
-            base64ToBytes(gConfigOptions.controlKey),
-            msgHandler);
+        try {
+            decryptAndHandleMsg(event.data.eventData.text,
+                base64ToBytes(gConfigOptions.controlKey),
+                msgHandler);
+        } catch(err) {
+            defaultError(err);
+        };
     });
 
+    /* Make some variables and functions available for debugging */
     window.configOptions = gConfigOptions;
     window.gJitsiApi = gJitsiApi;
     window.saveConfig = saveConfig;
@@ -270,7 +303,5 @@ try {
 }
 
 catch(err) {
-    console.log("Caught error", err);
-    hangupAndDispose(gJitsiApi);
-    setTimeout(() => {location.reload()}, 5000);
+    defaultError(err);
 }
