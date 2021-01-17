@@ -7,9 +7,14 @@ function createWindow () {
     }
   })
 
+  win.webContents.on('crashed', (e) => {
+    app.relaunch();
+    app.quit()
+  });
+
   win.loadFile('client.html');
-  //win.setFullScreen(true);
-  //win.setMenuBarVisibility(false);
+  win.setFullScreen(true);
+  win.setMenuBarVisibility(false);
 }
 
 app.whenReady().then(createWindow)
