@@ -66,74 +66,76 @@ function controlMsgHandler(msgObj) {
     }
 }
 
-try {
-    var gMinConfig = hashToConfig(location.hash.substring(1));
-    document.getElementById("roomName").value = gMinConfig.roomName;
-    document.getElementById("roomPass").value = gMinConfig.roomPass;
+if (location.hash.length > 1) {
+    try {
+        var gMinConfig = hashToConfig(location.hash.substring(1));
+        document.getElementById("roomName").value = gMinConfig.roomName;
+        document.getElementById("roomPass").value = gMinConfig.roomPass;
 
-    var domain = "meet.jit.si";
+        var domain = "meet.jit.si";
 
-    var options = {
-        roomName: gMinConfig.roomName,
-        width: 0,
-        height: 0,
-        parentNode: undefined,
-        userInfo: {
-            displayName: "CONTROL"
-        },
-        configOverwrite: {
-            prejoinPageEnabled: false,
-            startWithVideoMuted: true,
-            startWithAudioMuted: true,
-            startAudioOnly: true,
-            startSilent: true
-        },
-        interfaceConfigOverwrite: {},
-    }
-    var gJitsiApi = new JitsiMeetExternalAPI(domain, options);
+        var options = {
+            roomName: gMinConfig.roomName,
+            width: 0,
+            height: 0,
+            parentNode: undefined,
+            userInfo: {
+                displayName: "CONTROL"
+            },
+            configOverwrite: {
+                prejoinPageEnabled: false,
+                startWithVideoMuted: true,
+                startWithAudioMuted: true,
+                startAudioOnly: true,
+                startSilent: true
+            },
+            interfaceConfigOverwrite: {},
+        }
+        var gJitsiApi = new JitsiMeetExternalAPI(domain, options);
 
-    // when local user is trying to enter in a locked room
-    gJitsiApi.addEventListener('passwordRequired', () => {
-        gJitsiApi.executeCommand('password', gMinConfig.roomPass);
-    });
-
-    // when local user has joined the video conference 
-    gJitsiApi.addEventListener('videoConferenceJoined', (response) => {
-        gJitsiApi.executeCommand('password', gMinConfig.roomPass);
-        // Bit of a hack. Wait a bit after joining until config request
-        setTimeout(() => {getConfigInfo()}, 1000);
-    });
-
-    //this will setup the password for 1st user
-    gJitsiApi.on('participantRoleChanged', (event) => {
-        if (event.role === 'moderator') {
+        // when local user is trying to enter in a locked room
+        gJitsiApi.addEventListener('passwordRequired', () => {
             gJitsiApi.executeCommand('password', gMinConfig.roomPass);
-        }
-    });
+        });
 
-    //On error log, reload.
-    gJitsiApi.on('log', (event) => {
-        if (event.logLevel === 'error') {
+        // when local user has joined the video conference 
+        gJitsiApi.addEventListener('videoConferenceJoined', (response) => {
+            gJitsiApi.executeCommand('password', gMinConfig.roomPass);
+            // Bit of a hack. Wait a bit after joining until config request
+            setTimeout(() => {getConfigInfo()}, 1000);
+        });
+
+        //this will setup the password for 1st user
+        gJitsiApi.on('participantRoleChanged', (event) => {
+            if (event.role === 'moderator') {
+                gJitsiApi.executeCommand('password', gMinConfig.roomPass);
+            }
+        });
+
+        //On error log, reload.
+        gJitsiApi.on('log', (event) => {
+            if (event.logLevel === 'error') {
+                hangupAndDispose(gJitsiApi);
+                location.reload();
+            }
+        });
+
+        gJitsiApi.on('endpointTextMessageReceived', (event) => {
+            decryptAndHandleMsg(event.data.eventData.text,
+                base64ToBytes(gMinConfig.controlKey),
+                controlMsgHandler);
+        });
+
+        window.getConfigInfo = getConfigInfo;
+        window.setConfigInfo = setConfigInfo;
+        window.hangupAndDispose = () => {
             hangupAndDispose(gJitsiApi);
-            location.reload();
-        }
-    });
+        };
+    }
 
-    gJitsiApi.on('endpointTextMessageReceived', (event) => {
-        decryptAndHandleMsg(event.data.eventData.text,
-            base64ToBytes(gMinConfig.controlKey),
-            controlMsgHandler);
-    });
-
-    window.getConfigInfo = getConfigInfo;
-    window.setConfigInfo = setConfigInfo;
-    window.hangupAndDispose = () => {
+    catch(err) {
+        console.log("Caught error", err);
         hangupAndDispose(gJitsiApi);
-    };
-}
-
-catch(err) {
-    console.log("Caught error", err);
-    hangupAndDispose(gJitsiApi);
-    setTimeout(() => {location.reload()}, 5000);
+        setTimeout(() => {location.reload()}, 5000);
+    }
 }

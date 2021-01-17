@@ -92,7 +92,7 @@ function saveConfig() {
 }
 
 function clearConfig() {
-    localStorage.setItem("config", null);
+    localStorage.clear();
 }
 
 function applyNewConfig(configIn) {
@@ -171,7 +171,7 @@ try {
     var domain = "meet.jit.si";
     var joinUrl = "https://" + domain + '/' + gConfigOptions["roomName"];
     var controlUrl = "https://jackalstew.github.io/managed-meet/control.html#" + configToHash(gConfigOptions)
-
+    
     document.getElementById("roomUrl").href = joinUrl;
     document.getElementById("roomUrl").innerHTML = joinUrl;
 
