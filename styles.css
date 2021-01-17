@@ -64,7 +64,7 @@ button {
     width: 100%;
     max-width: 100%;
     min-width: 0px;
-    font-size: xx-large;
+    font-size: large;
 }
 
 button:hover {
