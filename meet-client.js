@@ -36,8 +36,8 @@ function closeSidebar() {
     jitsiIFrame.style.width = "100%";
 }
 
-function onPartitipantsChange() {
-    if (gJitsiApi.getNumberOfParticipants() > 1) {
+function updateDisplay(inCall) {
+    if (inCall) {
         closeSidebar();
     } else {
         if (gConfigOptions.showSidebar) {
@@ -46,6 +46,10 @@ function onPartitipantsChange() {
             closeSidebar();
         }
     }
+}
+
+function onPartitipantsChange() {
+    updateDisplay(gJitsiApi.getNumberOfParticipants() > 1);
 }
 
 function updateMuteStatus() {
@@ -141,7 +145,7 @@ function applyNewConfig(configIn) {
         location.reload();
     } else {
         // Otherwise run these functions to update display
-        onPartitipantsChange();
+        updateDisplay();
         updateMuteStatus();
     }
 }
