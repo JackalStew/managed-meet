@@ -19,7 +19,6 @@
     top: 0;
     left: 0;
     overflow-x: hidden; /* Disable horizontal scroll */
-    overflow-y: hidden; /* Disable vertical scroll */
     overflow-wrap: break-word;
     font-size: large;
 }
@@ -91,9 +90,9 @@ input[type=checkbox] {
 	-webkit-appearance: none;
 	background-color: #202020;
 	border: 1px solid #00FF88;
-    padding: 20px;
+    padding: 8px;
     position: relative;
-    top:14px;
+    top:6px;
 }
 
 input[type=checkbox]:checked {
@@ -104,7 +103,7 @@ input[type=text] {
 	background-color: #202020;
 	border: 1px solid #202020;
     width: 100%;
-    font-size: xx-large;
+    font-size: large;
 }
 
 input[type=text].focus {

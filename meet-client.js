@@ -20,12 +20,6 @@ function openSidebar() {
     var jitsiIFrame = gJitsiApi.getIFrame();
     jitsiIFrame.style.marginLeft = "25%";
     jitsiIFrame.style.width = "75%";
-
-    if (gConfigOptions.showConfig) {
-        document.getElementById("controlInfo").style.display = "block";
-    } else {
-        document.getElementById("controlInfo").style.display = "none";
-    }
 }
   
 /* Set the width of the sidebar to 0 and the left margin of the page content to 0 */
@@ -36,7 +30,34 @@ function closeSidebar() {
     jitsiIFrame.style.width = "100%";
 }
 
+function toggleConfig() {
+    gTmpState.configOpen = !gTmpState.configOpen;
+    updateDisplay();
+}
+
 function updateDisplay(inCall) {
+    document.getElementById("displayName").value = gConfigOptions.displayName;
+    document.getElementById("roomName").value = gConfigOptions.roomName;
+    document.getElementById("roomPassBox").value = gConfigOptions.roomPass;
+    document.getElementById("autoHdmi").checked = gConfigOptions.autoHdmi;
+    document.getElementById("showConfig").checked = gConfigOptions.showConfig;
+    document.getElementById("localMute").checked = gConfigOptions.localMute;
+
+    if (gTmpState.configOpen) {
+        document.getElementById("joinInfo").style.display = "none";
+        document.getElementById("controlInfo").style.display = "none";
+        document.getElementById("config").style.display = "block";
+    } else {
+        document.getElementById("joinInfo").style.display = "block";
+        document.getElementById("config").style.display = "none";
+
+        if (gConfigOptions.showConfig) {
+            document.getElementById("controlInfo").style.display = "block";
+        } else {
+            document.getElementById("controlInfo").style.display = "none";
+        }
+    }
+
     if (inCall) {
         closeSidebar();
     } else {
@@ -135,7 +156,7 @@ function generateConfig() {
         controlKey: bytesToBase64(generateKey(16)),
         autoHdmi: true,
         showSidebar: true,
-        showConfig: true,
+        showConfig: false,
         localMute: false
     }
     return thisConfig;
@@ -171,6 +192,7 @@ function clearConfig() {
 function applyNewConfig(configIn) {
     let newPassFlag = false;
     let reloadFlag = false;
+    let newDNFlag = false;
 
     const oldKey = base64ToBytes(gConfigOptions.controlKey);
 
@@ -182,6 +204,9 @@ function applyNewConfig(configIn) {
                     break
                 case "roomName":
                     reloadFlag = true;
+                    break;
+                case "displayName":
+                    newDNFlag = true;
                     break;
                 default:
                     break
@@ -197,6 +222,12 @@ function applyNewConfig(configIn) {
         gJitsiApi.executeCommand('password', gConfigOptions.roomPass);
     }
 
+    // Next, display name
+    if (newDNFlag) {
+        console.log("Updating display name");
+        gJitsiApi.executeCommand('displayName', gConfigOptions.displayName);
+    }
+
     // Save new config locally
     saveConfig();
 
@@ -210,6 +241,17 @@ function applyNewConfig(configIn) {
         updateDisplay();
         updateMuteStatus();
     }
+}
+
+function applyNewConfigLocally() {
+    applyNewConfig({
+        displayName: document.getElementById("displayName").value,
+        roomName: document.getElementById("roomName").value,
+        roomPass: document.getElementById("roomPassBox").value,
+        autoHdmi: document.getElementById("autoHdmi").checked,
+        showConfig: document.getElementById("showConfig").checked,
+        localMute: document.getElementById("localMute").checked
+    })
 }
 
 function sendMsg(msgOut) {
@@ -239,7 +281,8 @@ try {
     var gConfigOptions = null;
     var gTmpState = {
         turnOffTV: false,
-        cecLock: false
+        cecLock: false,
+        configOpen: false
     }
 
     if (inElectronRenderer()) var CecController = require('cec-controller');
@@ -297,9 +340,7 @@ try {
     }
     var gJitsiApi = new JitsiMeetExternalAPI(domain, options);
 
-    if (gConfigOptions.showSidebar) {
-        openSidebar();
-    }
+    updateDisplay();
 
     // when local user is trying to enter in a locked room
     gJitsiApi.addEventListener('passwordRequired', () => {
@@ -370,6 +411,8 @@ try {
     window.gJitsiApi = gJitsiApi;
     window.saveConfig = saveConfig;
     window.clearConfig = clearConfig;
+    window.toggleConfig = toggleConfig;
+    window.applyNewConfigLocally = applyNewConfigLocally;
     window.configToHash = () => {
         return configToHash(gConfigOptions)
     }

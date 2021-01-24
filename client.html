@@ -12,16 +12,33 @@
                 Scan to join<br />
                 <div id="joinQR" class="qrCode"></div>
             </div>
-            <div id="controlInfo" class="controlInfo">
+            <div id="controlInfo" class="sidebarText">
                 <br />
                 Scan to configure<br />
                 <a id ="controlUrl" href="">
                     <div id="controlQR" class="qrCode"></div>
                 </a>
             </div>
-            <div class="sidebarText">
+            <div id="config" class="sidebarText">
+                Display Name<br />
+                <input type="text" id="displayName"></input><br />
+                <br />
+                Room Name<br />
+                <input type="text" id="roomName"></input><br />
+                <br />
+                Room Password<br />
+                <input type="text" id="roomPassBox"></input><br />
+                <br />
+                <input type="checkbox" id="autoHdmi"><label for="autoHdmi">- Auto HDMI switch</label><br />
+                <input type="checkbox" id="showConfig"><label for="showConfig">- Show config links</label><br />
+                <input type="checkbox" id="localMute"><label for="localMute">- Mute audio and video</label><br />
+                <br />
+                <button onclick="applyNewConfigLocally()">Apply config</button><br /><br />
                 <button onclick="location.reload()">Reload</button><br /><br />
                 <button onclick="localStorage.clear()">Reset</button><br /><br />
+            </div>
+            <div class="sidebarText">
+                <button onclick="toggleConfig()">Show/hide config</button><br /><br />
             </div>
         </div>
         <script src="https://meet.jit.si/external_api.js"></script>
