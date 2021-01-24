@@ -100,7 +100,7 @@ function ungetHdmi() {
 }
 
 function onPartitipantsChange() {
-    const inCall = gJitsiApi.getNumberOfParticipants() > 1;
+    const inCall = gJitsiApi.getParticipantsInfo().length > 1;
     updateDisplay(inCall);
 
     if (inElectronRenderer() && gConfigOptions.autoHdmi) {
