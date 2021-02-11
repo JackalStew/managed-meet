@@ -17,6 +17,7 @@ function setConfigInfo() {
         config: {
             roomName: document.getElementById("roomName").value,
             roomPass: document.getElementById("roomPass").value,
+            displayName: document.getElementById("displayName").value,
             autoHdmi: document.getElementById("autoHdmi").checked,
             showSidebar: document.getElementById("showSidebar").checked,
             showConfig: document.getElementById("showConfig").checked,
@@ -46,6 +47,7 @@ function controlMsgHandler(msgObj) {
             console.log(msgObj.config)
             document.getElementById("roomName").value = msgObj.config.roomName;
             document.getElementById("roomPass").value = msgObj.config.roomPass;
+            document.getElementById("displayName").value = msgObj.config.displayName;
 
             for (const id of ["autoHdmi", "showSidebar", "showConfig", "localMute"]) {
                 document.getElementById(id).checked = msgObj.config[id];

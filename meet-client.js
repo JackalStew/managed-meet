@@ -32,13 +32,25 @@ function closeSidebar() {
 
 function toggleConfig() {
     gTmpState.configOpen = !gTmpState.configOpen;
-    updateDisplay();
+    updateDisplay(getNumberOfParticipants() > 1);
+}
+
+function getNumberOfParticipants() {
+    const participantInfo = gJitsiApi.getParticipantsInfo();
+    let numOut = participantInfo.length;
+    for (var participant of participantInfo) {
+        if (participant.displayName == "CONTROL") {
+            numOut -= 1;
+        }
+    }
+    return numOut;
 }
 
 function updateDisplay(inCall) {
-    document.getElementById("displayName").value = gConfigOptions.displayName;
     document.getElementById("roomName").value = gConfigOptions.roomName;
+    document.getElementById("roomPass").value = gConfigOptions.roomPass;
     document.getElementById("roomPassBox").value = gConfigOptions.roomPass;
+    document.getElementById("displayName").value = gConfigOptions.displayName;
     document.getElementById("autoHdmi").checked = gConfigOptions.autoHdmi;
     document.getElementById("showConfig").checked = gConfigOptions.showConfig;
     document.getElementById("localMute").checked = gConfigOptions.localMute;
@@ -121,8 +133,7 @@ function ungetHdmi() {
 }
 
 function onPartitipantsChange() {
-    const inCall = gJitsiApi.getParticipantsInfo().length > 1;
-    updateDisplay(inCall);
+    updateDisplay(getNumberOfParticipants() > 1);
 
     if (inElectronRenderer() && gConfigOptions.autoHdmi) {
         try {
@@ -192,7 +203,6 @@ function clearConfig() {
 function applyNewConfig(configIn) {
     let newPassFlag = false;
     let reloadFlag = false;
-    let newDNFlag = false;
 
     const oldKey = base64ToBytes(gConfigOptions.controlKey);
 
@@ -206,7 +216,7 @@ function applyNewConfig(configIn) {
                     reloadFlag = true;
                     break;
                 case "displayName":
-                    newDNFlag = true;
+                    gJitsiApi.executeCommand('displayName', gConfigOptions.displayName);
                     break;
                 default:
                     break
@@ -222,12 +232,6 @@ function applyNewConfig(configIn) {
         gJitsiApi.executeCommand('password', gConfigOptions.roomPass);
     }
 
-    // Next, display name
-    if (newDNFlag) {
-        console.log("Updating display name");
-        gJitsiApi.executeCommand('displayName', gConfigOptions.displayName);
-    }
-
     // Save new config locally
     saveConfig();
 
@@ -238,16 +242,16 @@ function applyNewConfig(configIn) {
         location.reload();
     } else {
         // Otherwise run these functions to update display
-        updateDisplay();
+        updateDisplay(getNumberOfParticipants() > 1);
         updateMuteStatus();
     }
 }
 
 function applyNewConfigLocally() {
     applyNewConfig({
-        displayName: document.getElementById("displayName").value,
         roomName: document.getElementById("roomName").value,
         roomPass: document.getElementById("roomPassBox").value,
+        displayName: document.getElementById("displayName").value,
         autoHdmi: document.getElementById("autoHdmi").checked,
         showConfig: document.getElementById("showConfig").checked,
         localMute: document.getElementById("localMute").checked
@@ -340,7 +344,7 @@ try {
     }
     var gJitsiApi = new JitsiMeetExternalAPI(domain, options);
 
-    updateDisplay();
+    updateDisplay(false);
 
     // when local user is trying to enter in a locked room
     gJitsiApi.addEventListener('passwordRequired', () => {
@@ -405,6 +409,8 @@ try {
             defaultError(err);
         };
     });
+
+    updateDisplay(getNumberOfParticipants() > 1);
 
     /* Make some variables and functions available for debugging */
     window.configOptions = gConfigOptions;
