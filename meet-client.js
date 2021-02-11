@@ -48,7 +48,7 @@ function getNumberOfParticipants() {
 
 function updateDisplay(inCall) {
     document.getElementById("roomName").value = gConfigOptions.roomName;
-    document.getElementById("roomPass").value = gConfigOptions.roomPass;
+    document.getElementById("roomPass").innerHTML = gConfigOptions.roomPass;
     document.getElementById("roomPassBox").value = gConfigOptions.roomPass;
     document.getElementById("displayName").value = gConfigOptions.displayName;
     document.getElementById("autoHdmi").checked = gConfigOptions.autoHdmi;
@@ -216,7 +216,7 @@ function applyNewConfig(configIn) {
                     reloadFlag = true;
                     break;
                 case "displayName":
-                    gJitsiApi.executeCommand('displayName', gConfigOptions.displayName);
+                    gJitsiApi.executeCommand('displayName', configIn['displayName']);
                     break;
                 default:
                     break
