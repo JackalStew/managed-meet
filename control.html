@@ -13,22 +13,22 @@
         <div id="controlPanel" class="controlPanel">
             <h1>Config</h1>
             <hr>
-            <button class="xlbutton" onclick="getConfigInfo()">Get config</button><br /><br />
+            <button onclick="getConfigInfo()">Get config</button><br /><br />
             Room Name<br />
-            <input type="text" class="xltext" id="roomName"></input><br />
+            <input type="text" id="roomName"></input><br />
             <br />
             Room Password<br />
-            <input type="text" class="xltext" id="roomPass"></input><br />
+            <input type="text" id="roomPass"></input><br />
             <br />
-            <input type="checkbox" class="xlcheckbox" id="autoHdmi"><label for="autoHdmi">- Auto HDMI switch</label><br />
-            <input type="checkbox" class="xlcheckbox" id="showSidebar"><label for="showSidebar">- Show sidebar</label><br />
-            <input type="checkbox" class="xlcheckbox" id="showConfig"><label for="showConfig">- Show config links</label><br />
-            <input type="checkbox" class="xlcheckbox" id="localMute"><label for="localMute">- Mute audio and video</label><br />
+            <input type="checkbox" id="autoHdmi"><label for="autoHdmi">- Auto HDMI switch</label><br />
+            <input type="checkbox" id="showSidebar"><label for="showSidebar">- Show sidebar</label><br />
+            <input type="checkbox" id="showConfig"><label for="showConfig">- Show config links</label><br />
+            <input type="checkbox" id="localMute"><label for="localMute">- Mute audio and video</label><br />
             <br />
-            <button class="xlbutton" onclick="setConfigInfo()">Apply config</button><br />
+            <button onclick="setConfigInfo()">Apply config</button><br />
             <br />
             <br />
-            <button class="xlbutton" onclick="hangupAndDispose()">Release control</button><br />
+            <button onclick="hangupAndDispose()">Release control</button><br />
         </div>
     </body>
 </html>

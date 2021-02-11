@@ -87,11 +87,13 @@ if (location.hash.length > 1) {
                 startWithVideoMuted: true,
                 startWithAudioMuted: true,
                 startAudioOnly: true,
-                startSilent: true
+                startSilent: true,
+                disableDeepLinking: true
             },
-            interfaceConfigOverwrite: {},
+            interfaceConfigOverwrite: {}
         }
         var gJitsiApi = new JitsiMeetExternalAPI(domain, options);
+        document.getElementById("jitsiConferenceFrame0").allow = "camera 'none'; microphone 'none'; display-capture 'none'";
 
         // when local user is trying to enter in a locked room
         gJitsiApi.addEventListener('passwordRequired', () => {
