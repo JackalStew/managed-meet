@@ -38,12 +38,22 @@ function toggleConfig() {
 function getNumberOfParticipants() {
     const participantInfo = gJitsiApi.getParticipantsInfo();
     let numOut = participantInfo.length;
+    console.log("Original number of participants:");
+    console.log(numOut);
     for (var participant of participantInfo) {
         if (participant.displayName == "CONTROL") {
+            console.log("CONTROL user detected");
             numOut -= 1;
         }
     }
     return numOut;
+}
+
+function updateQR() {
+    // Only need to update the control QR
+    // If we change the room name, we reload anyway which generates a new joinQR
+    gControlQR.clear();
+    gControlQR.makeCode(gControlUrlBase + configToHash(gConfigOptions));
 }
 
 function updateDisplay(inCall) {
@@ -168,7 +178,7 @@ function generateConfig() {
         controlKey: bytesToBase64(generateKey(16)),
         autoHdmi: true,
         showSidebar: true,
-        showConfig: false,
+        showConfig: true,
         localMute: false
     }
     return thisConfig;
@@ -202,37 +212,29 @@ function clearConfig() {
 }
 
 function applyNewConfig(configIn) {
-    let newPassFlag = false;
     let reloadFlag = false;
-
-    const oldKey = base64ToBytes(gConfigOptions.controlKey);
 
     for (var key in configIn) {
         if (key in gConfigOptions && gConfigOptions[key] != configIn[key]) {
             switch(key) {
                 case "roomPass":
-                    newPassFlag = true;
+                    console.log("Updating password");
+                    gJitsiApi.executeCommand('password', configIn.roomPass);
                     break
                 case "roomName":
                     reloadFlag = true;
                     break;
                 case "displayName":
-                    gJitsiApi.executeCommand('displayName', configIn['displayName']);
+                    gJitsiApi.executeCommand('displayName', configIn.displayName);
                     break;
                 default:
-                    break
+                    break;
             }
-            gConfigOptions[key] = configIn[key]
+            gConfigOptions[key] = configIn[key];
         }
     }
 
     // New config parsed just fine, time for an update!
-    // First, sort out password if it changed
-    if (newPassFlag) {
-        console.log("Updating password");
-        gJitsiApi.executeCommand('password', gConfigOptions.roomPass);
-    }
-
     // Save new config locally
     saveConfig();
 
@@ -243,6 +245,7 @@ function applyNewConfig(configIn) {
         location.reload();
     } else {
         // Otherwise run these functions to update display
+        updateQR();
         updateDisplay(getNumberOfParticipants() > 1);
         updateMuteStatus();
     }
@@ -297,20 +300,20 @@ try {
     saveConfig();
 
     var domain = "meet.jit.si";
-    var joinUrl = "https://" + domain + '/' + gConfigOptions["roomName"];
-    var controlUrl = "https://jackalstew.github.io/managed-meet/control.html#" + configToHash(gConfigOptions)
+    var joinUrlBase = "https://" + domain + '/';
+    var gControlUrlBase = "https://jackalstew.github.io/managed-meet/control.html#";
 
-    document.getElementById("roomUrl").href = joinUrl;
-    document.getElementById("roomUrl").innerHTML = joinUrl;
+    document.getElementById("roomUrl").href = joinUrlBase + gConfigOptions.roomName;
+    document.getElementById("roomUrl").innerHTML = joinUrlBase + gConfigOptions.roomName;
 
-    document.getElementById("roomPass").innerHTML = gConfigOptions["roomPass"];
+    document.getElementById("roomPass").innerHTML = gConfigOptions.roomPass;
 
-    document.getElementById("controlUrl").href = controlUrl;
+    document.getElementById("controlUrl").href = gControlUrlBase;
 
     const qrSize = 256;
 
-    var joinQR = new QRCode(document.getElementById("joinQR"), {
-        text: joinUrl,
+    var gJoinQR = new QRCode(document.getElementById("joinQR"), {
+        text: joinUrlBase + gConfigOptions.roomName,
         width: qrSize,
         height: qrSize,
         colorDark: window.getComputedStyle(document.getElementById("joinInfo")).color,
@@ -318,8 +321,8 @@ try {
         correctLevel: QRCode.CorrectLevel.L
     });
 
-    var controlQR = new QRCode(document.getElementById("controlQR"), {
-        text: controlUrl,
+    var gControlQR = new QRCode(document.getElementById("controlQR"), {
+        text: gControlUrlBase + configToHash(gConfigOptions),
         width: qrSize,
         height: qrSize,
         colorDark: window.getComputedStyle(document.getElementById("controlInfo")).color,
