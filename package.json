@@ -31,7 +31,7 @@
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
-            "name": "auto_jisti"
+            "name": "autojisti"
           }
         },
         {
@@ -42,7 +42,9 @@
         },
         {
           "name": "@electron-forge/maker-deb",
-          "config": {}
+          "config": {
+            "name": "autojisti"
+          }
         },
         {
           "name": "@electron-forge/maker-rpm",
