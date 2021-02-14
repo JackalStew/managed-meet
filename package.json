@@ -1,7 +1,7 @@
 {
-  "name": "managed-jitsi-test",
+  "name": "auto-jitsi",
   "version": "1.0.0",
-  "description": "externally managed jitsi",
+  "description": "Automated Jitsi wrapper",
   "main": "index.js",
   "scripts": {
     "start": "electron-forge start",
@@ -31,7 +31,7 @@
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
-            "name": "jitsi_test"
+            "name": "auto_jisti"
           }
         },
         {
