@@ -133,7 +133,8 @@ function ungetHdmi() {
 }
 
 function onPartitipantsChange() {
-    updateDisplay(getNumberOfParticipants() > 1);
+    const inCall = getNumberOfParticipants() > 1;
+    updateDisplay(inCall);
 
     if (inElectronRenderer() && gConfigOptions.autoHdmi) {
         try {
