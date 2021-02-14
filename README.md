@@ -38,7 +38,8 @@ This runs just fine on a Raspberry Pi 4 (a 3 can run it, but VERY slowly!)
 
 6) Open a terminal and run:
     ```
-    autojitsi
+    autojitsi &
+    unclutter -idle 1
     ```
 
 ## Notes on Security
