@@ -6,7 +6,8 @@
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "make-linux": "electron-forge make --platform linux --targets @electron-forge/maker-deb"
   },
   "author": "JackalStew",
   "license": "ISC",
